@@ -24,7 +24,8 @@ architecture fsm of project_reti_logiche is
     signal counter : std_logic_vector(15 downto 0);
     signal credibility : std_logic_vector(4 downto 0);
     signal prev_value : std_logic_vector(8 downto 0);
-    signal address_calc : : std_logic_vector(15 downto 0);
+    signal addr_calc: std_logic_vector(15 downto 0);
+    signal credibility_calc: std_logic_vector(15 downto 0);
 begin
     state_reg: process (i_clk, i_rst)
     begin
@@ -47,6 +48,8 @@ begin
                     o_mem_addr <= i_add;
                     o_mem_we <= '0';
                     prev_value <= i_mem_data;
+                    addr_calc <= i_add;
+                    credibility_calc <= i_add;
                     if i_mem_data = '00000000' then
                         credibility <= '00000';
                         next_state <= IFZERO;
@@ -54,9 +57,11 @@ begin
                         next_state <= IFNOTZERO;
                 when INPUT =>
                     o_mem_we <= '0';
-                    o_mem_addr <= 
-
-
+                    o_mem_addr <= addr_calc;
+                    if i_mem_data = '00000000' then
+                        next_state <= IFZERO;
+                    else
+                        next_state <= IFNOTZERO;
                 
                 when IFZERO =>
                     o_mem_we <= '1';
@@ -74,7 +79,8 @@ begin
                 
                 
                 when UPDATECREDIBILITY =>
-                    address_calc <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
+                    addr_calc <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
+                    credibility_calc <= std_logic_vector(UNSIGNED(credibility_calc)+2);
         
 
                     
