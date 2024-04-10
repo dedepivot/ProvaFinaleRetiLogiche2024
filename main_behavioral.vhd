@@ -19,7 +19,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture fsm of project_reti_logiche is
-    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT);
+    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, END);
     signal next_state, current_state: state_type;
 begin
     state_reg: process (i_clk, i_rst)
@@ -43,11 +43,13 @@ begin
         if (rising_edge(i_start) or i_start = '1') and i_rst = '0' then 
             case current_state is 
                 when SETUP =>
-                    o_mem_en <= '1';
-                    o_mem_addr <= i_add;
-                    o_mem_we <= '0';
-                    next_state <= FIRSTREAD;
-        
+                    if i_k /= '0000000000' then
+                        o_mem_en <= '1';
+                        o_mem_addr <= i_add;
+                        o_mem_we <= '0';
+                        next_state <= FIRSTREAD; 
+                    else
+                        next_state <= END;
                 when FIRSTREAD =>
                     in_number := i_mem_data;
                     if in_number = '00000000' then
@@ -84,14 +86,18 @@ begin
                     next_state <= INPUT
                 
                 when INPUT =>
+
                     in_number := i_mem_data;
                     if in_number = '00000000' then 
                         next_state <= IFZERO;
                     else
                         next_state <= IFNOTZERO;
-                    o_mem_we <= '1';       
+                    o_mem_we <= '1';    
+                
+                when ENDSTATE =>
+                    o_done <= '1';
 
         else    --soft reset
-            next_state <= START;
+            next_state <= SETUP;
             counter <= '0000000000000000';
-            current_state <= START;
+            current_state <= SETUP;
