@@ -34,6 +34,7 @@ begin
             current_state <= next_state;
         else
             current_state <= current_state; --??
+        end if;
     end process;
     main: process(current_state, i_start) --check if main is a keyword
         variable credibility : std_logic_vector(4 downto 0);
@@ -44,37 +45,39 @@ begin
         if (rising_edge(i_start) or i_start = '1') and i_rst = '0' then 
             case current_state is 
                 when SETUP =>
-                    if i_k /= '0000000000' then
+                    if i_k /= "0000000000" then
                         o_mem_en <= '1';
                         o_mem_addr <= i_add;
                         o_mem_we <= '0';
                         next_state <= FIRSTREAD; 
                     else
                         next_state <= ENDSTATE;
-
+                    end if;
+                    
                 when FIRSTREAD =>
                     in_number := i_mem_data;
-                    if in_number = '00000000' then
-                        credibility := '00000';
+                    if in_number = "00000000" then
+                        credibility := "00000";
                         next_state <= IFZERO;
                     else
                         next_state <= IFNOTZERO;
                     o_mem_we <= '1';       
-                    counter := '0000000000'; --downto
-                
+                    counter := "0000000000"; --downto
+                    end if;
+                    
                 when IFZERO =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                     o_mem_data <= in_number;
-                    if credibility /= '00000' then
+                    if credibility /= "00000" then
                         credibility := std_logic_vector(UNSIGNED(credibility) - 1);
                     next_state <= PRINTCREDIBILITY;
-                
+                    end if;
                 when IFNOTZERO =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                     o_mem_data <= in_number;
-                    credibility <= '11111';
+                    credibility := "11111";
                     next_state <= PRINTCREDIBILITY;
-                
+                    
                 when PRINTCREDIBILITY =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)+1); --address of credibility
                     o_mem_data <= credibility;
@@ -84,24 +87,29 @@ begin
                 when SETUPINPUT =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                     o_mem_we <= '0';
-                    next_state <= INPUT
+                    next_state <= INPUT;
                 
                 when INPUT =>
                     if to_integer(UNSIGNED(counter)) > (2 * (to_integer(UNSIGNED(i_k)) - 1)) then 
                         next_state <= ENDSTATE; 
                     else
                         in_number := i_mem_data;
-                        if in_number = '00000000' then 
+                        if in_number = "00000000" then 
                             next_state <= IFZERO;
                         else
                             next_state <= IFNOTZERO;
                         o_mem_we <= '1';    
-                        
+                        end if;
+                    end if;   
+                    
                 when ENDSTATE =>
                     o_done <= '1';
+        end case;
 
         else    --soft reset cycle
             next_state <= SETUP;
-            counter <= '0000000000';
+            counter := "0000000000";
             current_state <= SETUP;
+        end if;
+   end process;
 end architecture;
