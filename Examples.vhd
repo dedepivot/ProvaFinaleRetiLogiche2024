@@ -235,7 +235,7 @@ begin
 
 end architecture;
 
---flip flop con processasync (prcesso asincrono)
+--flip flop con processasync (processo asincrono)
 entity esempio11 is
     port (
         clk   : in std_logic;
