@@ -19,7 +19,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture fsm of project_reti_logiche is
-    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, END);
+    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE);
     signal next_state, current_state: state_type;
 begin
     state_reg: process (i_clk, i_rst)
@@ -36,7 +36,7 @@ begin
     end process;
     main: process(current_state, i_start) --check if main is a keyword
         variable credibility : std_logic_vector(4 downto 0);
-        variable counter : std_logic_vector(15 downto 0);
+        variable counter : std_logic_vector(9 downto 0);
         variable in_number : std_logic_vector(8 downto 0);
 
     begin
@@ -49,7 +49,8 @@ begin
                         o_mem_we <= '0';
                         next_state <= FIRSTREAD; 
                     else
-                        next_state <= END;
+                        next_state <= ENDSTATE;
+
                 when FIRSTREAD =>
                     in_number := i_mem_data;
                     if in_number = '00000000' then
@@ -58,7 +59,7 @@ begin
                     else
                         next_state <= IFNOTZERO;
                     o_mem_we <= '1';       
-                    counter := '0000000000000000'; --downto
+                    counter := '0000000000'; --downto
                 
                 when IFZERO =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
@@ -73,7 +74,6 @@ begin
                     credibility <= '11111';
                     next_state <= PRINTCREDIBILITY;
                 
-                
                 when PRINTCREDIBILITY =>
                     o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)+1); --address of credibility
                     o_mem_data <= credibility;
@@ -86,18 +86,20 @@ begin
                     next_state <= INPUT
                 
                 when INPUT =>
-
-                    in_number := i_mem_data;
-                    if in_number = '00000000' then 
-                        next_state <= IFZERO;
+                    if to_integer(UNSIGNED(counter)) > (2 * (to_integer(UNSIGNED(i_k)) - 1)) then 
+                        next_state <= ENDSTATE; 
                     else
-                        next_state <= IFNOTZERO;
-                    o_mem_we <= '1';    
-                
+                        in_number := i_mem_data;
+                        if in_number = '00000000' then 
+                            next_state <= IFZERO;
+                        else
+                            next_state <= IFNOTZERO;
+                        o_mem_we <= '1';    
+                        
                 when ENDSTATE =>
                     o_done <= '1';
 
-        else    --soft reset
+        else    --soft reset cycle
             next_state <= SETUP;
-            counter <= '0000000000000000';
+            counter <= '0000000000';
             current_state <= SETUP;
