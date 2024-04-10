@@ -39,7 +39,7 @@ begin
     main: process(current_state, i_start) --check if main is a keyword
         variable credibility : std_logic_vector(4 downto 0);
         variable counter : std_logic_vector(9 downto 0);
-        variable in_number : std_logic_vector(8 downto 0);
+        variable in_number : std_logic_vector(7 downto 0);
 
     begin
         if (rising_edge(i_start) or i_start = '1') and i_rst = '0' then 
