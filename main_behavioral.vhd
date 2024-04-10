@@ -1,4 +1,6 @@
-use ieee.numeric_std.all
+LIBRARY ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity project_reti_logiche is
     port (
@@ -26,9 +28,8 @@ begin
     begin
         if i_rst = '1' then --or rising-edge
             o_done <= '0';
-            next_state <= START; --tochange
-            current_state <= START;
-
+            next_state <= SETUP; --tochange
+            current_state <= SETUP;
         elsif rising_edge(i_clk) then
             current_state <= next_state;
         else
@@ -103,3 +104,4 @@ begin
             next_state <= SETUP;
             counter <= '0000000000';
             current_state <= SETUP;
+end architecture;
