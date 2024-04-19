@@ -21,10 +21,10 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture fsm of project_reti_logiche is
-    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE);
+    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE, PREREAD);
     signal next_state, current_state: state_type;
 begin
-    main: process(i_clk, i_rst, i_start) --check if main is a keyword
+    main: process(i_clk, i_rst) --check if main is a keyword
         variable credibility : std_logic_vector(4 downto 0);
         variable counter : std_logic_vector(9 downto 0);
         variable in_number : std_logic_vector(7 downto 0);
@@ -38,10 +38,13 @@ begin
                             o_mem_en <= '1';
                             o_mem_addr <= i_add;
                             o_mem_we <= '0';
-                            current_state <= FIRSTREAD; 
+                            current_state <= PREREAD; 
                         else
                             current_state <= ENDSTATE;
                         end if;
+
+                    when PREREAD =>
+                        current_state <= FIRSTREAD;
                         
                     when FIRSTREAD =>
                         in_number := i_mem_data;
@@ -73,11 +76,13 @@ begin
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)+1); --address of credibility
                         o_mem_data <= "000" & credibility;
                         counter := std_logic_vector(UNSIGNED(counter)+2);
+                        o_mem_we <= '0';
                         current_state <= SETUPINPUT;
+                        
 
                     when SETUPINPUT =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
-                        o_mem_we <= '0';
+                        --o_mem_we <= '0';
                         current_state <= INPUT;
                     
                     when INPUT =>
