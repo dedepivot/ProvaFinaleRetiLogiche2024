@@ -21,7 +21,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture fsm of project_reti_logiche is
-    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE, PREREAD);
+    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE, PREREAD, READCREDIBILITY, PREWRITEZERO, PREWRITEONE, RESETUP);
     signal next_state, current_state: state_type;
 begin
     main: process(i_clk, i_rst) --check if main is a keyword
@@ -56,22 +56,35 @@ begin
                         end if;
                         o_mem_we <= '1';       
                         counter := "0000000000"; --downto
-                        
+
+                    when PREWRITEONE =>
+                        o_mem_we <= '1';
+                        current_state <= IFNOTZERO; 
+                    
+                    when PREWRITEZERO =>
+                        o_mem_we <= '1';
+                        current_state <= IFZERO; 
                         
                     when IFZERO =>
-                        o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
+                        o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)); --called twice?
                         o_mem_data <= in_number;
                         if credibility /= "00000" then
                             credibility := std_logic_vector(UNSIGNED(credibility) - 1);
                         end if;
-                        current_state <= PRINTCREDIBILITY;
+                        o_mem_we <= '0';
+                        current_state <= READCREDIBILITY;
 
                     when IFNOTZERO =>
-                        o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
+                        o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)); --called twice?
                         o_mem_data <= in_number;
                         credibility := "11111";
-                        current_state <= PRINTCREDIBILITY;
+                        o_mem_we <= '0';
+                        current_state <= READCREDIBILITY;
                         
+                    when READCREDIBILITY =>
+                        o_mem_we <= '1';
+                        current_state <= PRINTCREDIBILITY;
+                    
                     when PRINTCREDIBILITY =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)+1); --address of credibility
                         o_mem_data <= "000" & credibility;
@@ -83,19 +96,22 @@ begin
                     when SETUPINPUT =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                         --o_mem_we <= '0';
+                        current_state <= RESETUP;
+                    
+                    when RESETUP =>
                         current_state <= INPUT;
                     
                     when INPUT =>
                         if to_integer(UNSIGNED(counter)) > (2 * (to_integer(UNSIGNED(i_k)) - 1)) then 
                             current_state <= ENDSTATE; 
-                        else
-                            in_number := i_mem_data;
-                            if in_number = "00000000" then 
-                                current_state <= IFZERO;
+                        else    
+                            if i_mem_data = "00000000" then 
+                                current_state <= PREWRITEZERO;
                             else
-                                current_state <= IFNOTZERO;
+                                in_number := i_mem_data;
+                                current_state <= PREWRITEONE;
                             end if;
-                            o_mem_we <= '1';    
+                            --o_mem_we <= '1';    
                         end if;   
                         
                     when ENDSTATE =>
