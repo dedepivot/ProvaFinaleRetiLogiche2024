@@ -21,8 +21,8 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture fsm of project_reti_logiche is
-    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE, PREREAD, READCREDIBILITY, PREWRITEZERO, PREWRITEONE, RESETUP);
-    signal next_state, current_state: state_type;
+    type state_type is (SETUP, FIRSTREAD, IFZERO, IFNOTZERO, PRINTCREDIBILITY, SETUPINPUT, INPUT, ENDSTATE, READCREDIBILITY, IDLE);
+    signal next_state, current_state, previous_state: state_type;
 begin
     main: process(i_clk, i_rst) --check if main is a keyword
         variable credibility : std_logic_vector(4 downto 0);
@@ -34,17 +34,15 @@ begin
             if (rising_edge(i_start) or i_start = '1') and i_rst = '0' then 
                 case current_state is 
                     when SETUP =>
+                        previous_state <= SETUP;
                         if i_k /= "0000000000" then
                             o_mem_en <= '1';
                             o_mem_addr <= i_add;
                             o_mem_we <= '0';
-                            current_state <= PREREAD; 
+                            current_state <= IDLE; 
                         else
                             current_state <= ENDSTATE;
                         end if;
-
-                    when PREREAD =>
-                        current_state <= FIRSTREAD;
                         
                     when FIRSTREAD =>
                         in_number := i_mem_data;
@@ -57,14 +55,6 @@ begin
                         o_mem_we <= '1';       
                         counter := "0000000000"; --downto
 
-                    when PREWRITEONE =>
-                        o_mem_we <= '1';
-                        current_state <= IFNOTZERO; 
-                    
-                    when PREWRITEZERO =>
-                        o_mem_we <= '1';
-                        current_state <= IFZERO; 
-                        
                     when IFZERO =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)); --called twice?
                         o_mem_data <= in_number;
@@ -81,6 +71,7 @@ begin
                         o_mem_we <= '0';
                         current_state <= READCREDIBILITY;
                         
+                    -- read UNDEFINED in the first cycle / could be merge in the IDLE state
                     when READCREDIBILITY =>
                         o_mem_we <= '1';
                         current_state <= PRINTCREDIBILITY;
@@ -92,28 +83,41 @@ begin
                         o_mem_we <= '0';
                         current_state <= SETUPINPUT;
                         
-
+                    --could be merge in the IDLE state
                     when SETUPINPUT =>
+                        previous_state <= SETUPINPUT;
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                         --o_mem_we <= '0';
-                        current_state <= RESETUP;
-                    
-                    when RESETUP =>
-                        current_state <= INPUT;
+                        current_state <= IDLE;
                     
                     when INPUT =>
+                        previous_state <= INPUT;
                         if to_integer(UNSIGNED(counter)) > (2 * (to_integer(UNSIGNED(i_k)) - 1)) then 
                             current_state <= ENDSTATE; 
                         else    
-                            if i_mem_data = "00000000" then 
-                                current_state <= PREWRITEZERO;
-                            else
+                            if i_mem_data /= "00000000" then 
                                 in_number := i_mem_data;
-                                current_state <= PREWRITEONE;
                             end if;
                             --o_mem_we <= '1';    
-                        end if;   
-                        
+                        end if;
+                        current_state <=IDLE;
+
+                    when IDLE =>
+                        case previous_state is
+                            when SETUP =>
+                                current_state <= FIRSTREAD;
+                            when SETUPINPUT =>
+                                current_state <= INPUT;
+                            when INPUT =>
+                                o_mem_we <= '1';
+                                if i_mem_data = "00000000" then
+                                    current_state <= IFZERO; 
+                                else
+                                    current_state <= IFNOTZERO; 
+                                end if;
+                            when others =>
+                                null; --needed or vhdl will cry
+                        end case;
                     when ENDSTATE =>
                         o_done <= '1';
                 end case;
