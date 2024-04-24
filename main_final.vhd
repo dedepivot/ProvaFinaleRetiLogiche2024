@@ -63,10 +63,11 @@ begin
                     when PRINTCREDIBILITY =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(counter)+UNSIGNED(i_add)+1);
                         o_mem_data <= credibility;
-                        o_mem_we <= '0';
+                        --o_mem_we <= '0';
                         current_state <= IDLEINPUT;
                     
                     when IDLEINPUT =>
+                        o_mem_we <= '0';
                         counter := std_logic_vector(UNSIGNED(counter)+2);
                         o_mem_addr <= std_logic_vector(UNSIGNED(counter)+UNSIGNED(i_add));
                         current_state <= IDLE;

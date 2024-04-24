@@ -117,9 +117,9 @@ begin
                                 else
                                     current_state <= IFZERO;
                                 end if;
-                                when others =>
-                                    --assert o_done = '0' report "WTF" severity failure;
-                                    null;
+                            when others =>
+                                --assert o_done = '0' report "WTF" severity failure;
+                                null;
                         end case;
                 end case;
             elsif i_rst = '1' then --or rising-edge
