@@ -28,7 +28,6 @@ begin
         variable credibility : std_logic_vector(4 downto 0);
         variable counter : std_logic_vector(9 downto 0);
         variable in_number : std_logic_vector(7 downto 0);
-
     begin
         if rising_edge(i_clk) then
             if (rising_edge(i_start) or i_start = '1') and i_rst = '0' then 
@@ -54,7 +53,7 @@ begin
                         end if;
                         o_mem_we <= '1';       
                         counter := "0000000000"; --downto
-
+                        
                     when IFZERO =>
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)); --called twice?
                         o_mem_data <= in_number;
@@ -71,21 +70,21 @@ begin
                         o_mem_we <= '0';
                         current_state <= READCREDIBILITY;
                         
-                    -- read UNDEFINED in the first cycle / could be merge in the IDLE state
                     when READCREDIBILITY =>
                         o_mem_we <= '1';
                         current_state <= PRINTCREDIBILITY;
                     
                     when PRINTCREDIBILITY =>
+                        previous_state <= PRINTCREDIBILITY;
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter)+1); --address of credibility
                         o_mem_data <= "000" & credibility;
                         counter := std_logic_vector(UNSIGNED(counter)+2);
                         o_mem_we <= '0';
                         current_state <= SETUPINPUT;
                         
-                    --could be merge in the IDLE state
+
                     when SETUPINPUT =>
-                        previous_state <= SETUPINPUT;
+                        previous_state <= SETUPINPUT;  
                         o_mem_addr <= std_logic_vector(UNSIGNED(i_add)+UNSIGNED(counter));
                         --o_mem_we <= '0';
                         current_state <= IDLE;
@@ -98,11 +97,14 @@ begin
                             if i_mem_data /= "00000000" then 
                                 in_number := i_mem_data;
                             end if;
+                            current_state <= IDLE;
                             --o_mem_we <= '1';    
-                        end if;
-                        current_state <=IDLE;
+                        end if;   
+                        
+                    when ENDSTATE =>
+                        o_done <= '1';
 
-                    when IDLE =>
+                    when IDLE=>
                         case previous_state is
                             when SETUP =>
                                 current_state <= FIRSTREAD;
@@ -110,16 +112,15 @@ begin
                                 current_state <= INPUT;
                             when INPUT =>
                                 o_mem_we <= '1';
-                                if i_mem_data = "00000000" then
-                                    current_state <= IFZERO; 
+                                if in_number /= "00000000" then
+                                    current_state <= IFNOTZERO;
                                 else
-                                    current_state <= IFNOTZERO; 
+                                    current_state <= IFZERO;
                                 end if;
-                            when others =>
-                                null; --needed or vhdl will cry
+                                when others =>
+                                    --assert o_done = '0' report "WTF" severity failure;
+                                    null;
                         end case;
-                    when ENDSTATE =>
-                        o_done <= '1';
                 end case;
             elsif i_rst = '1' then --or rising-edge
                 o_done <= '0';
