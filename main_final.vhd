@@ -100,6 +100,7 @@ begin
                 
             else --(rising_edge(i_rst) or i_rst = '1' ) --(i_start = '0') then
                 o_done <= '0';
+                o_mem_en <= '0';
                 current_state <= SETUP;
             end if;
         else
