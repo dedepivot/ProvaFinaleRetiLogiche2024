@@ -27,14 +27,14 @@ begin
     main: process(i_clk, i_rst)
         variable in_value: std_logic_vector(7 downto 0);
         variable credibility: std_logic_vector(7 downto 0);
-        variable counter: std_logic_vector(9 downto 0);
+        variable counter: std_logic_vector(15 downto 0);
     begin
         if (rising_edge(i_clk)) then
             if ((i_start = '1' or rising_edge(i_start)) and i_rst = '0') then
                 case current_state is  
                     when SETUP => 
                         o_mem_en <= '1';
-                        counter := "0000000000";
+                        counter := "0000000000000000";
                         if(i_k = "0000000000") then
                             current_state <= ENDSTATE;
                         else
@@ -42,7 +42,7 @@ begin
                             o_mem_addr <= i_add;
                             current_state <= SETUPIDLE;
                         end if;
-                    
+
                     when SETUPIDLE =>
                         current_state <= FIRSTREADWRITE;
                         --in_value = i_mem_data
