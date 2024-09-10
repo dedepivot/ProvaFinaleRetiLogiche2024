@@ -1,5 +1,24 @@
+# Prova Finale di Reti Logiche - 2024
+professore: Salice Fabio  
 
-# Introduzione {#Introduzione}
+valutazione: 29/30
+### Autori:
+- [Grisoni Samuele](https://github.com/dedepivot)
+- [Guarisco Alessio](https://github.com/Aleee-ggr)  
+
+### Risorse:
+- [Codice VHDL del modulo](vhdl_module.vhd)
+- [Specifica](documentation/Specifica.pdf)
+- [Relazione](documentation/Relazione.pdf)
+- [Relazione (Latex)](documentation/Relazione_Latex)
+
+
+Segue una versione della relazione autocompilata in markdown.  
+Per una formattazione migliore si consiglia di guardare il pdf o la versione in Latex.
+
+
+
+# Introduzione
 
 ## Obiettivo
 
@@ -21,39 +40,7 @@ in questo caso verrà diminuito.
 Segue un esempio dell'esecuzione del programma con la seguente stringa
 di valori: **128, 64, 0, 0, 0**
 
-   **Indirizzo**     **Valore**
-  --------------- ----------------
-       \...             \...
-                   10000000 (128)
-       1235         00000000 (0)
-                   01000000 (64)
-       1237         00000000 (0)
-                    00000000 (0)
-       1239         00000000 (0)
-                    00000000 (0)
-       1241         00000000 (0)
-                    00000000 (0)
-       1243         00000000 (0)
-       \...             \...
-
-  : Stato della memoria dopo l'esecuzione
-
-   **Indirizzo**     **Valore**
-  --------------- ----------------
-       \...             \...
-                   10000000 (128)
-       1235        00011111 (31)
-                   01000000 (64)
-       1237        00011111 (31)
-                   01000000 (64)
-       1239        00011110 (30)
-                   01000000 (64)
-       1241        00011101 (29)
-                   01000000 (64)
-       1243        00011100 (28)
-       \...             \...
-
-  : Stato della memoria dopo l'esecuzione
+<img src="documentation/Relazione_Latex/images/tables.png" alt="image" />
 
 ## Idea di Base
 
@@ -134,12 +121,13 @@ end project_reti_logiche;
 ## La macchina a stati finiti
 
 <figure id="fig:fsm">
-
+<p><img src="documentation/Relazione_Latex/images/fsm.png" alt="image" /> <span
+id="fig:DisallignmentScreen" label="fig:DisallignmentScreen"></span></p>
 <figcaption><span id="fig:fsm" label="fig:fsm"></span>Schema della FSM
 realizzata</figcaption>
 </figure>
 
-La figura [1](#fig:fsm){reference-type="ref" reference="fig:fsm"}
+La figura [1]
 rappresenta uno schema semplificato della FSM utilizzata per risolvere
 il problema dato. La semplificazione, rispetto al codice fornito, è
 stata effettuata per meri motivi grafici e riguarda nome e contenuto di
@@ -207,8 +195,7 @@ Il problema principale riscontrato durante lo sviluppo è stato la
 lentezza della memoria presente nel TestBench. Tale componente infatti
 introduce un ritardo di 1 ns che impedisce di scrivere la credibilità e
 leggere la parola successiva in due cicli di clock successivi come
-visibile nella figura [7](#fig:DisallignmentScreen){reference-type="ref"
-reference="fig:DisallignmentScreen"}.\
+visibile nella figura [7].
 Come scritto in precedenza sia lo stato SETUPINPUT che lo stato di
 SETUPSTART hanno tra i vari loro compiti quello di impostare il corretto
 valore ai segnali per predisporre la memoria per la lettura. La risposta
@@ -230,7 +217,7 @@ IDLE con l'obbiettivo di diminuire il numero di stati ridondanti.
 
 Per realizzare il componente sono state effettuate una serie di scelte
 implementatitive; alcune sono visibili nello schema
-[1](#fig:fsm){reference-type="ref" reference="fig:fsm"} mentre altre
+[1] mentre altre
 sono state omesse per semplicità grafica.\
 Tra queste modifiche troviamo la scelta di gestire lo stato di IDLE con
 uno switch-case, di fatto realizzando una piccola FSM dentro la nostra
@@ -259,7 +246,7 @@ stati che, in teoria, potevano essere unite. Un esempio di tale sequenza
 è formato da FIRSTREADWRITE-PRINTCREDIBILITY-SETUPINPUT. Si noti che
 l'introduzione di questi stati non rallenta l'esecuzione del nostro
 componente in quanto, come spiegato nella sezione
-*[2.2](#SingleReading){reference-type="ref" reference="SingleReading"}*,
+*[2.2]*,
 sono comunque necessari 3 cicli di clock per completare una lettura e
 scrittura.\
 Un'ulteriore scelta implementativa, non rappresentata nel disegno della
@@ -270,7 +257,7 @@ autoanello che riporta continuamente la FSM in ENDSTATE.
 ## Altri errori riscontrati durante lo sviluppo della FSM
 
 Durante la realizzazione della macchina a stati sopraindicata
-([1](#fig:fsm){reference-type="ref" reference="fig:fsm"}) sono stati
+([1]) sono stati
 riscontrati una serie di problemi minori, tra i più significativi
 troviamo:
 
@@ -299,14 +286,12 @@ troviamo:
 ## Sintesi
 
 ![Sintesi componente con TestBench
-ufficiale](images/CompleteGraphs.png){#fig:SaliceTestBench
-width="\\linewidth"}
+ufficiale](documentation/Relazione_Latex/images/CompleteGraphs.png)
 
 L'immagine mostra il risultato della sintesi del nostro componente.
 Poichè i segnali di ingresso e uscita del componente sono già stati
 descritti nella apposita sezione
-[1.4](#PortDescription){reference-type="ref"
-reference="PortDescription"} qui verranno analizzati, in ordine, solo i
+[1.4] qui verranno analizzati, in ordine, solo i
 più rilevanti:
 
 1.  **tb_clk:** Rappresenta il segnale di clock della TestBench.
@@ -338,8 +323,7 @@ più rilevanti:
 ## Aggiornamento memoria in ritardo
 
 ![Dettaglio di sintesi del TestBench
-ufficiale](images/DisAlligmentGraph.png){#fig:DisallignmentScreen
-width="\\linewidth"}
+ufficiale](documentation/Relazione_Latex/images/DisAlligmentGraph.png)
 
 In questa figura si evince chiaramente il problema indotto dal ritardo
 della memoria. In particolare ricordiamo che: il primo segnale
@@ -376,7 +360,7 @@ valori senza eccedere i limiti di memoria o causare overflow.
 ### Sequenza di Zero
 
 <figure id="fig:DisallignmentScreen">
-<p><img src="images/SerieZero.png" alt="image" /> <span
+<p><img src="documentation/Relazione_Latex/images/SerieZero.png" alt="image" /> <span
 id="fig:DisallignmentScreen" label="fig:DisallignmentScreen"></span></p>
 </figure>
 
@@ -399,7 +383,7 @@ errati di entrambi i casi.
 ### Multipli Start
 
 <figure id="fig:DisallignmentScreen">
-<p><img src="images/MoreStart.png" alt="image" /> <span
+<p><img src="documentation/Relazione_Latex/images/MoreStart.png" alt="image" /> <span
 id="fig:DisallignmentScreen" label="fig:DisallignmentScreen"></span></p>
 </figure>
 
@@ -411,7 +395,7 @@ uno START in una sola testbench.
 ### Reset durante la lettura
 
 <figure id="fig:DisallignmentScreen">
-<p><img src="images/ResetRead.png" alt="image" /> <span
+<p><img src="documentation/Relazione_Latex/images/ResetRead.png" alt="image" /> <span
 id="fig:DisallignmentScreen" label="fig:DisallignmentScreen"></span></p>
 </figure>
 
@@ -427,7 +411,7 @@ Start.
 ### Start durante il Reset
 
 <figure id="fig:DisallignmentScreen">
-<p><img src="images/rstwhilestart.png" alt="image" /> <span
+<p><img src="documentation/Relazione_Latex/images/rstwhilestart.png" alt="image" /> <span
 id="fig:DisallignmentScreen" label="fig:DisallignmentScreen"></span></p>
 </figure>
 
