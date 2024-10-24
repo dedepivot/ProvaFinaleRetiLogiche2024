@@ -1,7 +1,7 @@
 # Prova Finale di Reti Logiche - 2024
-professore: Salice Fabio  
+Professore: Salice Fabio  
 
-valutazione: 29/30
+Valutazione: 29/30
 ### Autori:
 - [Grisoni Samuele](https://github.com/dedepivot)
 - [Guarisco Alessio](https://github.com/Aleee-ggr)  
